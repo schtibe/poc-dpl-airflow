@@ -8,3 +8,6 @@ data:
   FEATURES_DB_ENDPOINT: services-poc-datapipeline.cle28yqoqd58.eu-central-1.rds.amazonaws.com
   FEATURES_DB_PORT: "5432"
   FEATURES_DB_NAME: service-oa-features
+  RAW_TABLE_BUCKET_ARN: arn:aws:s3tables:eu-central-1:025064823138:bucket/poc-datapipeline-iceberg-raw
+  SANITIZE_TABLE_BUCKET_ARN: arn:aws:s3tables:eu-central-1:025064823138:bucket/poc-datapipeline-iceberg-raw
+  LOAD_TABLE_BUCKET_ARN: arn:aws:s3tables:eu-central-1:025064823138:bucket/poc-datapipeline-iceberg-load

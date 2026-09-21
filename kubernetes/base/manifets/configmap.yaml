@@ -1,0 +1,10 @@
+# kubernetes/base/manifets/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dag-config
+  namespace: airflow
+data:
+  FEATURES_DB_ENDPOINT: services-poc-datapipeline.cle28yqoqd58.eu-central-1.rds.amazonaws.com
+  FEATURES_DB_PORT: "5432"
+  FEATURES_DB_NAME: service-oa-features

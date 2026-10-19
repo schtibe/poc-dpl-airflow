@@ -251,7 +251,7 @@ data:
     namespace = airflow
     pod_template_file = /opt/airflow/pod_templates/pod_template_file.yaml
     worker_container_repository = 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags
-    worker_container_tag = local-ltshb-b8c5159
+    worker_container_tag = local-lthee-67653e5
     
     [logging]
     colored_console_log = False
@@ -294,7 +294,7 @@ data:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
     spec:
       initContainers:
-        - image: '025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags-only:init-local-lthee-e79a423'
+        - image: '025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags-only:init-local-lthee-f9e8da0'
           imagePullPolicy: 'IfNotPresent'
           name: dag-init
           securityContext:
@@ -351,7 +351,7 @@ data:
                 secretKeyRef:
                   name: airflow-dag-secrets
                   key: FEATURES_DB_USER
-          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-ltshb-b8c5159
+          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-lthee-67653e5
           imagePullPolicy: IfNotPresent
           securityContext: 
             allowPrivilegeEscalation: false
@@ -923,7 +923,7 @@ spec:
       annotations:
         checksum/metadata-secret: b2fe937560e9635aeb01fce9100c2f836c5880f81c802565ce95fbcc8a56da4c
         checksum/pgbouncer-config-secret: 1dae2adc757473469686d37449d076b0c82404f61413b58ae68b3c5e99527688
-        checksum/airflow-config: d89ac2d2f9c0c00bf38906c9d246f78ac18364113def463a9ddeec59814a330a
+        checksum/airflow-config: db260fd9a4bf3b2964d0428493dfbe77c714b0c7a6350e818d8f03d2b9624e26
         checksum/extra-configmaps: e862ea47e13e634cf17d476323784fa27dac20015550c230953b526182f5cac8
         checksum/extra-secrets: e9582fdd622296c976cbc10a5ba7d6702c28a24fe80795ea5b84ba443a56c827
     spec:
@@ -955,7 +955,7 @@ spec:
         - name: wait-for-airflow-migrations
           resources:
             {}
-          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-ltshb-b8c5159
+          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-lthee-67653e5
           imagePullPolicy: IfNotPresent
           securityContext: 
             allowPrivilegeEscalation: false
@@ -1011,7 +1011,7 @@ spec:
                   key: api-secret-key
       containers:
         - name: api-server
-          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-ltshb-b8c5159
+          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-lthee-67653e5
           imagePullPolicy: IfNotPresent
           securityContext: 
             allowPrivilegeEscalation: false
@@ -1150,7 +1150,7 @@ spec:
       annotations:
         checksum/metadata-secret: b2fe937560e9635aeb01fce9100c2f836c5880f81c802565ce95fbcc8a56da4c
         checksum/pgbouncer-config-secret: 1dae2adc757473469686d37449d076b0c82404f61413b58ae68b3c5e99527688
-        checksum/airflow-config: d89ac2d2f9c0c00bf38906c9d246f78ac18364113def463a9ddeec59814a330a
+        checksum/airflow-config: db260fd9a4bf3b2964d0428493dfbe77c714b0c7a6350e818d8f03d2b9624e26
         checksum/extra-configmaps: e862ea47e13e634cf17d476323784fa27dac20015550c230953b526182f5cac8
         checksum/extra-secrets: e9582fdd622296c976cbc10a5ba7d6702c28a24fe80795ea5b84ba443a56c827
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
@@ -1184,7 +1184,7 @@ spec:
         - name: wait-for-airflow-migrations
           resources:
             {}
-          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-ltshb-b8c5159
+          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-lthee-67653e5
           imagePullPolicy: IfNotPresent
           securityContext: 
             allowPrivilegeEscalation: false
@@ -1198,6 +1198,8 @@ spec:
             - mountPath: /opt/airflow/dags
               name: dags
               readOnly: true
+            - mountPath: /tmp
+              name: tmp
             - name: config
               mountPath: "/opt/airflow/airflow.cfg"
               subPath: airflow.cfg
@@ -1241,7 +1243,11 @@ spec:
                 secretKeyRef:
                   name: airflow-api-secret-key
                   key: api-secret-key
-        - image: '025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags-only:init-local-lthee-e79a423'
+        - command:
+          - sh
+          - -c
+          - cp -r /opt/airflow/dags-staging/. /opt/airflow/dags/
+          image: '025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags-only:init-local-lthee-f9e8da0'
           imagePullPolicy: 'IfNotPresent'
           name: dag-init
           securityContext:
@@ -1253,9 +1259,11 @@ spec:
           volumeMounts:
           - mountPath: /opt/airflow/dags
             name: dags
+          - mountPath: /tmp
+            name: tmp
       containers:
         - name: dag-processor
-          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-ltshb-b8c5159
+          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-lthee-67653e5
           imagePullPolicy: IfNotPresent
           securityContext: 
             allowPrivilegeEscalation: false
@@ -1275,6 +1283,8 @@ spec:
             - mountPath: /opt/airflow/dags
               name: dags
               readOnly: true
+            - mountPath: /tmp
+              name: tmp
             - name: logs
               mountPath: "/opt/airflow/logs"
             - name: config
@@ -1316,7 +1326,7 @@ spec:
                   name: airflow-api-secret-key
                   key: api-secret-key          
             - name: PYTHONPATH
-              value: "/opt/airflow/dags/local-airflow-dag-init-container/python"
+              value: "/opt/airflow/dags/python"
           livenessProbe:
             initialDelaySeconds: 10
             timeoutSeconds: 20
@@ -1332,7 +1342,7 @@ spec:
         - name: dag-processor-log-groomer
           resources:
             {}
-          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-ltshb-b8c5159
+          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-lthee-67653e5
           imagePullPolicy: IfNotPresent
           securityContext: 
             allowPrivilegeEscalation: false
@@ -1360,6 +1370,8 @@ spec:
             - mountPath: /opt/airflow/dags
               name: dags
               readOnly: true
+            - mountPath: /tmp
+              name: tmp
       volumes:
         - name: config
           configMap:
@@ -1372,6 +1384,8 @@ spec:
           name: aws-secrets-airflow
         - emptyDir: {}
           name: dags
+        - emptyDir: {}
+          name: tmp
         - name: logs
           emptyDir:
             {}
@@ -1415,7 +1429,7 @@ spec:
         checksum/metadata-secret: b2fe937560e9635aeb01fce9100c2f836c5880f81c802565ce95fbcc8a56da4c
         checksum/result-backend-secret: 98a68f230007cfa8f5d3792e1aff843a76b0686409e4a46ab2f092f6865a1b71
         checksum/pgbouncer-config-secret: 1dae2adc757473469686d37449d076b0c82404f61413b58ae68b3c5e99527688
-        checksum/airflow-config: d89ac2d2f9c0c00bf38906c9d246f78ac18364113def463a9ddeec59814a330a
+        checksum/airflow-config: db260fd9a4bf3b2964d0428493dfbe77c714b0c7a6350e818d8f03d2b9624e26
         checksum/extra-configmaps: e862ea47e13e634cf17d476323784fa27dac20015550c230953b526182f5cac8
         checksum/extra-secrets: e9582fdd622296c976cbc10a5ba7d6702c28a24fe80795ea5b84ba443a56c827
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
@@ -1449,7 +1463,7 @@ spec:
         - name: wait-for-airflow-migrations
           resources:
             {}
-          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-ltshb-b8c5159
+          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-lthee-67653e5
           imagePullPolicy: IfNotPresent
           securityContext: 
             allowPrivilegeEscalation: false
@@ -1507,7 +1521,7 @@ spec:
                   key: api-secret-key
       containers:
         - name: scheduler
-          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-ltshb-b8c5159
+          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-lthee-67653e5
           imagePullPolicy: IfNotPresent
           securityContext: 
             allowPrivilegeEscalation: false
@@ -1601,7 +1615,7 @@ spec:
         - name: scheduler-log-groomer
           resources:
             {}
-          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-ltshb-b8c5159
+          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-lthee-67653e5
           imagePullPolicy: IfNotPresent
           securityContext: 
             allowPrivilegeEscalation: false
@@ -1766,7 +1780,7 @@ spec:
       annotations:
         checksum/metadata-secret: b2fe937560e9635aeb01fce9100c2f836c5880f81c802565ce95fbcc8a56da4c
         checksum/pgbouncer-config-secret: 1dae2adc757473469686d37449d076b0c82404f61413b58ae68b3c5e99527688
-        checksum/airflow-config: d89ac2d2f9c0c00bf38906c9d246f78ac18364113def463a9ddeec59814a330a
+        checksum/airflow-config: db260fd9a4bf3b2964d0428493dfbe77c714b0c7a6350e818d8f03d2b9624e26
         checksum/extra-configmaps: e862ea47e13e634cf17d476323784fa27dac20015550c230953b526182f5cac8
         checksum/extra-secrets: e9582fdd622296c976cbc10a5ba7d6702c28a24fe80795ea5b84ba443a56c827
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
@@ -1800,7 +1814,7 @@ spec:
         - name: wait-for-airflow-migrations
           resources:
             {}
-          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-ltshb-b8c5159
+          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-lthee-67653e5
           imagePullPolicy: IfNotPresent
           securityContext: 
             allowPrivilegeEscalation: false
@@ -1824,6 +1838,8 @@ spec:
             - mountPath: /opt/airflow/dags
               name: dags
               readOnly: true
+            - mountPath: /tmp
+              name: tmp
           args:          
             - airflow
             - db
@@ -1859,7 +1875,11 @@ spec:
                 secretKeyRef:
                   name: airflow-api-secret-key
                   key: api-secret-key
-        - image: '025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags-only:init-local-lthee-e79a423'
+        - command:
+          - sh
+          - -c
+          - cp -r /opt/airflow/dags-staging/. /opt/airflow/dags/
+          image: '025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags-only:init-local-lthee-f9e8da0'
           imagePullPolicy: 'IfNotPresent'
           name: dag-init
           securityContext:
@@ -1871,9 +1891,11 @@ spec:
           volumeMounts:
           - mountPath: /opt/airflow/dags
             name: dags
+          - mountPath: /tmp
+            name: tmp
       containers:
         - name: triggerer
-          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-ltshb-b8c5159
+          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-lthee-67653e5
           imagePullPolicy: IfNotPresent
           securityContext: 
             allowPrivilegeEscalation: false
@@ -1893,6 +1915,8 @@ spec:
             - mountPath: /opt/airflow/dags
               name: dags
               readOnly: true
+            - mountPath: /tmp
+              name: tmp
             - name: logs
               mountPath: "/opt/airflow/logs"
             - name: config
@@ -1935,7 +1959,7 @@ spec:
                   key: api-secret-key
           
             - name: PYTHONPATH
-              value: "/opt/airflow/dags/local-airflow-dag-init-container/python"
+              value: "/opt/airflow/dags/python"
           livenessProbe:
             initialDelaySeconds: 10
             timeoutSeconds: 20
@@ -1954,7 +1978,7 @@ spec:
         - name: triggerer-log-groomer
           resources:
             {}
-          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-ltshb-b8c5159
+          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-lthee-67653e5
           imagePullPolicy: IfNotPresent
           securityContext: 
             allowPrivilegeEscalation: false
@@ -1982,6 +2006,8 @@ spec:
             - mountPath: /opt/airflow/dags
               name: dags
               readOnly: true
+            - mountPath: /tmp
+              name: tmp
       volumes:
         - name: config
           configMap:
@@ -1994,6 +2020,8 @@ spec:
           name: aws-secrets-airflow
         - emptyDir: {}
           name: dags
+        - emptyDir: {}
+          name: tmp
   volumeClaimTemplates:
     - apiVersion: v1
       kind: PersistentVolumeClaim
@@ -2048,7 +2076,7 @@ spec:
         []
       containers:
         - name: create-user
-          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-ltshb-b8c5159
+          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-lthee-67653e5
           imagePullPolicy: IfNotPresent
           securityContext: 
             allowPrivilegeEscalation: false
@@ -2173,7 +2201,7 @@ spec:
         []
       containers:
         - name: run-airflow-migrations
-          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-ltshb-b8c5159
+          image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-lthee-67653e5
           imagePullPolicy: IfNotPresent
           securityContext: 
             allowPrivilegeEscalation: false
@@ -2290,7 +2318,7 @@ spec:
             fsGroup: 0
           containers:
             - name: airflow-cleanup-pods
-              image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-ltshb-b8c5159
+              image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-lthee-67653e5
               imagePullPolicy: IfNotPresent
               securityContext: 
                 allowPrivilegeEscalation: false
@@ -2405,7 +2433,7 @@ spec:
             fsGroup: 0
           containers:
             - name: database-cleanup
-              image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-ltshb-b8c5159
+              image: 025064823138.dkr.ecr.eu-central-1.amazonaws.com/poc-datapipeline/airflow-dags:local-lthee-67653e5
               imagePullPolicy: IfNotPresent
               securityContext: 
                 allowPrivilegeEscalation: false

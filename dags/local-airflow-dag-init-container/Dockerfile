@@ -1,20 +1,20 @@
-FROM apache/airflow:3.2.2 AS dependencies
+FROM apache/airflow:3.3.2-python3.14 AS dependencies
 
 COPY --chown=airflow:root pyproject.toml uv.lock /opt/airflow/dag-project/
 COPY --chown=airflow:root wheels/ /opt/airflow/dag-project/wheels/
 
 WORKDIR /opt/airflow/dag-project
 RUN uv export \
-        --locked \
-        --no-dev \
-        --no-emit-project \
-        --no-hashes \
-        --format requirements-txt \
-        --output-file /tmp/dag-requirements.txt \
+    --locked \
+    --no-dev \
+    --no-emit-project \
+    --no-hashes \
+    --format requirements-txt \
+    --output-file /tmp/dag-requirements.txt \
     && uv pip install \
-        --no-cache \
-        --target /opt/airflow/dag-source/python \
-        --requirements /tmp/dag-requirements.txt \
+    --no-cache \
+    --target /opt/airflow/dag-source/python \
+    --requirements /tmp/dag-requirements.txt \
     && rm /tmp/dag-requirements.txt
 
 COPY --chown=airflow:root dags/ /opt/airflow/dag-source/
